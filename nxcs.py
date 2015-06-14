@@ -49,6 +49,9 @@ class classifier:
     def __str__(self):
         return "Classifier " + str(self.id) + ": " + self.condition + " = " + str(self.action) + " Fitness: " + str(self.fitness) + " Prediction: " + str(self.prediction) + " Error: " + str(self.error) + " Experience: " + str(self.experience)
 
+    def __repr__(self):
+        return "Classifier " + str(self.id) + ": " + self.condition + " = " + str(self.action) + " Fitness: " + str(self.fitness) + " Prediction: " + str(self.prediction) + " Error: " + str(self.error) + " Experience: " + str(self.experience)
+
     def mutate(self, state, mu, num_actions):
         self.condition = ''.join([self.condition[i] if numpy.random.rand() > mu else state[i] if self.condition[i] == '#' else '#' for i in range(len(self.condition))])
         if numpy.random.rand() < mu:
@@ -171,10 +174,9 @@ class xcs:
     def generate_predictions(self, match_set):
         PA = [0] * self.parameters.num_actions
         FSA = [0] * self.parameters.num_actions
-        for k, g in itertools.groupby(match_set, lambda clas: clas.action):
-            group = list(g)
-            PA[k] = sum([clas.prediction * clas.fitness for clas in group])
-            FSA[k] = sum([clas.fitness for clas in group])
+        for clas in match_set:
+            PA[clas.action] += clas.prediction * clas.fitness
+            FSA[clas.action] += clas.fitness
 
         normal = [PA[i] if FSA[i] == 0 else PA[i]/FSA[i] for i in range(self.parameters.num_actions)]
 
