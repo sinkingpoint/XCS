@@ -62,7 +62,7 @@ class classifier:
        @param mutation_rate - The probability with which to mutate
        @param num_actions - The number of actions in the system
     """
-    def mutate(self, state, mutation_rate, num_actions):
+    def _mutate(self, state, mutation_rate, num_actions):
         self.condition = ''.join([self.condition[i] if numpy.random.rand() > mutation_rate else state[i] if self.condition[i] == '#' else '#' for i in range(len(self.condition))])
         if numpy.random.rand() < mutation_rate:
             self.action = numpy.random.randint(0, num_actions)
@@ -73,7 +73,7 @@ class classifier:
        @param theta_del - See parameters above
        @param delta - See parameters above
     """
-    def delete_vote(self, average_fitness, theta_del, delta):
+    def _delete_vote(self, average_fitness, theta_del, delta):
         vote = self.average_size * self.numerosity
         if self.experience > theta_del and self.fitness / self.numerosity < delta * average_fitness:
             return vote * average_fitness / (self.fitness / self.numerosity)
@@ -85,14 +85,14 @@ class classifier:
         @param theta_sub - See parameters above
         @param e0 - See parameters above
     """
-    def could_subsume(self, theta_sub, e0):
+    def _could_subsume(self, theta_sub, e0):
         return self.experience > theta_sub and self.error < e0
 
     """
         Returns whether this classifier is more general than another
         @param other - the classifier to check against
     """
-    def is_more_general(self, other):
+    def _is_more_general(self, other):
         if len([i for i in self.condition if i == '#']) <= len([i for i in other.condition if i == '#']):
             return False
 
@@ -104,8 +104,8 @@ class classifier:
         @param theta_sub - See parameters above
         @param e0 - See parameters above
     """
-    def does_subsume(self, other, theta_sub, e0):
-        return self.action == other.action and self.could_subsume(theta_sub, e0) and self.is_more_general(other)
+    def _does_subsume(self, other, theta_sub, e0):
+        return self.action == other.action and self._could_subsume(theta_sub, e0) and self._is_more_general(other)
 
     def __hash__(self):
         return self.id
@@ -207,7 +207,7 @@ class xcs:
             return
 
         average_fitness = sum([clas.fitness for clas in self.population]) / numerosity_sum
-        votes = [clas.delete_vote(average_fitness, self.parameters.theta_del, self.parameters.delta) for clas in self.population]
+        votes = [clas._delete_vote(average_fitness, self.parameters.theta_del, self.parameters.delta) for clas in self.population]
         vote_sum = sum(votes)
         choice = numpy.random.choice(self.population, p=[vote / vote_sum for vote in votes])
         if choice.numerosity > 1:
@@ -306,13 +306,13 @@ class xcs:
     def _action_set_subsumption(self, action_set):
         cl = None
         for clas in action_set:
-            if clas.could_subsume(self.parameters.theta_sub, self.parameters.e0):
+            if clas._could_subsume(self.parameters.theta_sub, self.parameters.e0):
                 if cl == None or len([i for i in clas.condition if i == '#']) > len([i for i in cl.condition if i == '#']) or numpy.random.rand() > 0.5:
                     cl = clas
 
         if cl:
             for clas in action_set:
-                if cl.is_more_general(clas):
+                if cl._is_more_general(clas):
                     cl.numerosity = cl.numerosity + clas.numerosity
                     action_set.remove(clas)
                     self.population.remove(clas)
@@ -356,11 +356,11 @@ class xcs:
             child_2.fitness = child_2.fitness * 0.1
 
             for child in [child_1, child_2]:
-                child.mutate(state, self.parameters.mutation_rate, self.parameters.num_actions)
+                child._mutate(state, self.parameters.mutation_rate, self.parameters.num_actions)
                 if self.parameters.do_GA_subsumption == True:
-                    if parent_1.does_subsume(child, self.parameters.theta_sub, self.parameters.e0):
+                    if parent_1._does_subsume(child, self.parameters.theta_sub, self.parameters.e0):
                         parent_1.numerosity = parent_1.numerosity + 1
-                    elif parent_2.does_subsume(child, self.parameters.theta_sub, self.parameters.e0):
+                    elif parent_2._does_subsume(child, self.parameters.theta_sub, self.parameters.e0):
                         parent_2.numerosity = parent_2.numerosity + 1
                     else:
                         self._insert_to_population(child)
@@ -382,7 +382,7 @@ def state_matches(condition, state):
     @param child_1 - The first child to crossover
     @param child_2 - The second child to crossover
 """
-def _crossover(self, child_1, child_2):
+def _crossover(child_1, child_2):
     x = numpy.random.randint(0, len(child_1.condition))
     y = numpy.random.randint(0, len(child_1.condition))
 

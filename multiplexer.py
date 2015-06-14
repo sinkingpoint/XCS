@@ -65,4 +65,4 @@ for j in range(validation_steps):
     rand_state = state()
     this_correct = this_correct + reward(rand_state, my_xcs.classify(rand_state))
 
-print("Performance " + str(i+1) + ": " + str((this_correct / validation_steps / rho) * 100) + "%");
+print("Performance " + ": " + str((this_correct / validation_steps / rho) * 100) + "%");
